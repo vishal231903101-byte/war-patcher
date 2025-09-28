@@ -10,22 +10,25 @@ import heroBanner from '@/assets/hero-banner.jpg';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingMode, setProcessingMode] = useState<'damage' | 'restore'>('damage');
+  const [damagedImageUrl, setDamagedImageUrl] = useState<string | null>(null);
+  const [restoredImageUrl, setRestoredImageUrl] = useState<string | null>(null);
+  const [isProcessingDamage, setIsProcessingDamage] = useState(false);
+  const [isProcessingRestore, setIsProcessingRestore] = useState(false);
   const { toast } = useToast();
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file);
-    setProcessedImageUrl(null); // Clear previous result
+    setDamagedImageUrl(null);
+    setRestoredImageUrl(null);
   };
 
   const handleClearImage = () => {
     setSelectedImage(null);
-    setProcessedImageUrl(null);
+    setDamagedImageUrl(null);
+    setRestoredImageUrl(null);
   };
 
-  const handleProcessImage = async () => {
+  const handleGenerateDamage = async () => {
     if (!selectedImage) {
       toast({
         title: "No image selected",
@@ -35,22 +38,42 @@ const Index = () => {
       return;
     }
 
-    setIsProcessing(true);
+    setIsProcessingDamage(true);
     
     // Simulate processing time
     setTimeout(() => {
       // In a real implementation, this would fetch from your Google Drive
-      // For demo purposes, we'll use different placeholders based on mode
-      const processedUrl = processingMode === 'damage' 
-        ? "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=600&fit=crop"
-        : "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop";
-      
-      setProcessedImageUrl(processedUrl);
-      setIsProcessing(false);
+      setDamagedImageUrl("https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=600&fit=crop");
+      setIsProcessingDamage(false);
       
       toast({
         title: "Processing complete",
-        description: `${processingMode === 'damage' ? 'War damage simulation' : 'Image restoration'} has been generated successfully`,
+        description: "War damage simulation has been generated successfully",
+      });
+    }, 3000);
+  };
+
+  const handleGenerateRestore = async () => {
+    if (!selectedImage) {
+      toast({
+        title: "No image selected",
+        description: "Please upload an image first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsProcessingRestore(true);
+    
+    // Simulate processing time
+    setTimeout(() => {
+      // In a real implementation, this would fetch from your Google Drive
+      setRestoredImageUrl("https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop");
+      setIsProcessingRestore(false);
+      
+      toast({
+        title: "Processing complete",
+        description: "Image restoration has been generated successfully",
       });
     }, 3000);
   };
@@ -116,46 +139,50 @@ const Index = () => {
             
             <div className="space-y-6">
               <Card className="p-6 shadow-card">
-                <h3 className="text-lg font-semibold mb-4">Processing Mode</h3>
+                <h3 className="text-lg font-semibold mb-4">Generate Options</h3>
                 
-                <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="space-y-3">
                   <Button
-                    variant={processingMode === 'damage' ? 'default' : 'outline'}
-                    onClick={() => setProcessingMode('damage')}
-                    className="text-sm"
+                    onClick={handleGenerateDamage}
+                    disabled={!selectedImage || isProcessingDamage}
+                    className="w-full bg-gradient-transform hover:shadow-glow transition-all duration-300"
+                    size="lg"
                   >
-                    Generate Damage
+                    {isProcessingDamage ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="w-4 h-4 mr-2" />
+                        Generate Damage
+                      </>
+                    )}
                   </Button>
+
                   <Button
-                    variant={processingMode === 'restore' ? 'default' : 'outline'}
-                    onClick={() => setProcessingMode('restore')}
-                    className="text-sm"
+                    onClick={handleGenerateRestore}
+                    disabled={!selectedImage || isProcessingRestore}
+                    className="w-full bg-gradient-secondary hover:shadow-glow transition-all duration-300"
+                    size="lg"
                   >
-                    Restore Image
+                    {isProcessingRestore ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="w-4 h-4 mr-2" />
+                        Restore to Undamaged
+                      </>
+                    )}
                   </Button>
                 </div>
-
-                <Button
-                  onClick={handleProcessImage}
-                  disabled={!selectedImage || isProcessing}
-                  className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
-                  size="lg"
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Brain className="w-4 h-4 mr-2" />
-                      {processingMode === 'damage' ? 'Generate Damage' : 'Restore Image'}
-                    </>
-                  )}
-                </Button>
                 
                 <p className="text-xs text-muted-foreground mt-3 text-center">
-                  AI processing typically takes 2-3 seconds
+                  Generate both versions from your uploaded image
                 </p>
               </Card>
 
@@ -184,12 +211,13 @@ const Index = () => {
           </div>
 
           {/* Results Section */}
-          {(selectedImage || processedImageUrl) && (
+          {(selectedImage || damagedImageUrl || restoredImageUrl) && (
             <ImageComparison
               originalImage={selectedImage}
-              processedImageUrl={processedImageUrl}
-              isProcessing={isProcessing}
-              processingMode={processingMode}
+              damagedImageUrl={damagedImageUrl}
+              restoredImageUrl={restoredImageUrl}
+              isProcessingDamage={isProcessingDamage}
+              isProcessingRestore={isProcessingRestore}
             />
           )}
         </div>

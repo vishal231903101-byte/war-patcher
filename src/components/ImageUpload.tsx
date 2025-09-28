@@ -115,7 +115,7 @@ const ImageUpload = ({ onImageSelect, selectedImage, onClear }: ImageUploadProps
               <Upload className="w-8 h-8 text-primary-foreground" />
             </div>
             
-            <h3 className="text-xl font-semibold mb-2">Upload Undamaged Image</h3>
+            <h3 className="text-xl font-semibold mb-2">Upload Image</h3>
             <p className="text-muted-foreground mb-6">
               Drag and drop your image here, or click to browse
             </p>

@@ -10,18 +10,19 @@ import heroBanner from '@/assets/hero-banner.jpg';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [damagedImageUrl, setDamagedImageUrl] = useState<string | null>(null);
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingMode, setProcessingMode] = useState<'damage' | 'restore'>('damage');
   const { toast } = useToast();
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file);
-    setDamagedImageUrl(null); // Clear previous result
+    setProcessedImageUrl(null); // Clear previous result
   };
 
   const handleClearImage = () => {
     setSelectedImage(null);
-    setDamagedImageUrl(null);
+    setProcessedImageUrl(null);
   };
 
   const handleProcessImage = async () => {
@@ -39,13 +40,17 @@ const Index = () => {
     // Simulate processing time
     setTimeout(() => {
       // In a real implementation, this would fetch from your Google Drive
-      // For demo purposes, we'll use a placeholder
-      setDamagedImageUrl("https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=600&fit=crop");
+      // For demo purposes, we'll use different placeholders based on mode
+      const processedUrl = processingMode === 'damage' 
+        ? "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=600&fit=crop"
+        : "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop";
+      
+      setProcessedImageUrl(processedUrl);
       setIsProcessing(false);
       
       toast({
         title: "Processing complete",
-        description: "War damage simulation has been generated successfully",
+        description: `${processingMode === 'damage' ? 'War damage simulation' : 'Image restoration'} has been generated successfully`,
       });
     }, 3000);
   };
@@ -73,8 +78,8 @@ const Index = () => {
             </h2>
             
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              Advanced AI model trained on 100 epochs to transform undamaged infrastructure images 
-              into realistic war damage simulations for research and educational purposes.
+              Advanced AI model trained on 100 epochs for bidirectional image transformation - 
+              simulate war damage on infrastructure or restore damaged buildings back to their original state.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 mb-12">
@@ -84,7 +89,7 @@ const Index = () => {
               </div>
               <div className="flex items-center space-x-2 bg-card px-4 py-2 rounded-full shadow-card">
                 <Shield className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium">Research Purpose</span>
+                <span className="text-sm font-medium">Bidirectional AI</span>
               </div>
               <div className="flex items-center space-x-2 bg-card px-4 py-2 rounded-full shadow-card">
                 <Brain className="w-5 h-5 text-primary" />
@@ -111,8 +116,25 @@ const Index = () => {
             
             <div className="space-y-6">
               <Card className="p-6 shadow-card">
-                <h3 className="text-lg font-semibold mb-4">Processing Controls</h3>
+                <h3 className="text-lg font-semibold mb-4">Processing Mode</h3>
                 
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <Button
+                    variant={processingMode === 'damage' ? 'default' : 'outline'}
+                    onClick={() => setProcessingMode('damage')}
+                    className="text-sm"
+                  >
+                    Generate Damage
+                  </Button>
+                  <Button
+                    variant={processingMode === 'restore' ? 'default' : 'outline'}
+                    onClick={() => setProcessingMode('restore')}
+                    className="text-sm"
+                  >
+                    Restore Image
+                  </Button>
+                </div>
+
                 <Button
                   onClick={handleProcessImage}
                   disabled={!selectedImage || isProcessing}
@@ -127,7 +149,7 @@ const Index = () => {
                   ) : (
                     <>
                       <Brain className="w-4 h-4 mr-2" />
-                      Generate Damage
+                      {processingMode === 'damage' ? 'Generate Damage' : 'Restore Image'}
                     </>
                   )}
                 </Button>
@@ -162,11 +184,12 @@ const Index = () => {
           </div>
 
           {/* Results Section */}
-          {(selectedImage || damagedImageUrl) && (
+          {(selectedImage || processedImageUrl) && (
             <ImageComparison
               originalImage={selectedImage}
-              damagedImageUrl={damagedImageUrl}
+              processedImageUrl={processedImageUrl}
               isProcessing={isProcessing}
+              processingMode={processingMode}
             />
           )}
         </div>

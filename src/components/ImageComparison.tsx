@@ -6,24 +6,25 @@ import { useToast } from '@/hooks/use-toast';
 
 interface ImageComparisonProps {
   originalImage: File | null;
-  damagedImageUrl: string | null;
+  processedImageUrl: string | null;
   isProcessing?: boolean;
+  processingMode: 'damage' | 'restore';
 }
 
-const ImageComparison = ({ originalImage, damagedImageUrl, isProcessing }: ImageComparisonProps) => {
+const ImageComparison = ({ originalImage, processedImageUrl, isProcessing, processingMode }: ImageComparisonProps) => {
   const { toast } = useToast();
 
   const handleDownload = () => {
-    if (!damagedImageUrl) return;
+    if (!processedImageUrl) return;
     
     // In a real implementation, this would download the processed image
     toast({
       title: "Download started",
-      description: "The damaged image is being downloaded",
+      description: `The ${processingMode === 'damage' ? 'damaged' : 'restored'} image is being downloaded`,
     });
   };
 
-  if (!originalImage && !damagedImageUrl) {
+  if (!originalImage && !processedImageUrl) {
     return null;
   }
 
@@ -31,7 +32,7 @@ const ImageComparison = ({ originalImage, damagedImageUrl, isProcessing }: Image
     <Card className="p-6 shadow-card">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold">Image Comparison</h3>
-        {damagedImageUrl && (
+        {processedImageUrl && (
           <Button onClick={handleDownload} variant="outline" size="sm">
             <Download className="w-4 h-4 mr-2" />
             Download Result
@@ -75,11 +76,14 @@ const ImageComparison = ({ originalImage, damagedImageUrl, isProcessing }: Image
           </div>
         </div>
 
-        {/* Damaged Image */}
+        {/* Processed Image */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Badge variant="destructive" className="bg-gradient-transform">
-              War Damaged
+            <Badge 
+              variant={processingMode === 'damage' ? 'destructive' : 'secondary'} 
+              className={processingMode === 'damage' ? 'bg-gradient-transform' : 'bg-gradient-secondary'}
+            >
+              {processingMode === 'damage' ? 'War Damaged' : 'Restored'}
             </Badge>
             {isProcessing && (
               <div className="flex items-center space-x-2">
@@ -93,13 +97,15 @@ const ImageComparison = ({ originalImage, damagedImageUrl, isProcessing }: Image
               <div className="w-full h-full flex items-center justify-center">
                 <div className="text-center space-y-4">
                   <div className="w-12 h-12 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-sm text-muted-foreground">Generating war damage simulation...</p>
+                  <p className="text-sm text-muted-foreground">
+                    {processingMode === 'damage' ? 'Generating war damage simulation...' : 'Restoring image...'}
+                  </p>
                 </div>
               </div>
-            ) : damagedImageUrl ? (
+            ) : processedImageUrl ? (
               <img
-                src={damagedImageUrl}
-                alt="AI generated war damaged image"
+                src={processedImageUrl}
+                alt={`AI generated ${processingMode === 'damage' ? 'war damaged' : 'restored'} image`}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -111,7 +117,7 @@ const ImageComparison = ({ originalImage, damagedImageUrl, isProcessing }: Image
         </div>
       </div>
 
-      {damagedImageUrl && (
+      {processedImageUrl && (
         <div className="mt-6 p-4 bg-gradient-secondary rounded-lg">
           <h4 className="font-medium mb-2">AI Model Information</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -125,7 +131,7 @@ const ImageComparison = ({ originalImage, damagedImageUrl, isProcessing }: Image
             </div>
             <div>
               <span className="text-muted-foreground">Task:</span>
-              <p className="font-medium">War Damage Simulation</p>
+              <p className="font-medium">{processingMode === 'damage' ? 'War Damage Simulation' : 'Image Restoration'}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Status:</span>
